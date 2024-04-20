@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
     <title>Document Search</title>
   </head>
   <body>
@@ -18,31 +21,54 @@
         multiple
         accept=".txt, .csv"
       /><br /><br />
-      <label for="search_term">Enter a word to find:</label>
-      <input type="text" id="search_term" name="search_term" /><br /><br />
-      <button type="submit">Search</button>
+      <label for="search_term">Search for a word:</label>
+      <input type="text" id="search_term" name="search_term" />
+      <button type="submit">Upload Files and Search</button>
     </form>
 
-    {% if error %}
-    <p style="color: red">{{ error }}</p>
-    {% endif %} {% if search_result %}
-    <h2>Search Result</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Word</th>
-          <th>Document</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for word, documents in search_result.items() %}
-        <tr>
-          <td>{{ word }}</td>
-          <td>{{ documents|join(', ') }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% endif %}
+    <div class="output-container">
+      {% if request.method == "POST" %} {% if error %}
+      <p class="output-message">{{ error }}</p>
+      {% endif %} {% endif %} {% if all_words %}
+      <h2>All Words and Positions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Word</th>
+            <th>Positions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for word, positions in all_words.items() %}
+          <tr>
+            <td>{{ word }}</td>
+            <td>{{ positions }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %} {% if search_result %}
+      <h2>Search Result</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Word</th>
+            <th>Positions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for word, positions in search_result.items() %}
+          <tr>
+            <td>{{ word }}</td>
+            <td>{{ positions }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %} {% if not error and not all_words and not search_result and
+      request.method == "POST" %}
+      <p class="output-message">No files uploaded.</p>
+      {% endif %}
+    </div>
   </body>
 </html>
