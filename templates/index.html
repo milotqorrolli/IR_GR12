@@ -1,74 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/styles.css') }}"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>Document Search</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Document Search</h1>
 
     <form action="/" method="post" enctype="multipart/form-data">
-      <label for="files">Choose files:</label>
-      <input
-        type="file"
-        id="files"
-        name="files[]"
-        multiple
-        accept=".txt, .csv"
-      /><br /><br />
-      <label for="search_term">Search for a word:</label>
-      <input type="text" id="search_term" name="search_term" />
-      <button type="submit">Upload Files and Search</button>
+        <label for="files">Choose files:</label>
+        <input type="file" id="files" name="files[]" multiple accept=".txt, .csv"/><br /><br />
+        <label for="search_term">Search for a word:</label>
+        <input type="text" id="search_term" name="search_term" />
+        <button type="submit">Upload Files and Search</button>
     </form>
 
     <div class="output-container">
-      {% if request.method == "POST" %} {% if error %}
-      <p class="output-message">{{ error }}</p>
-      {% endif %} {% endif %} {% if all_words %}
-      <h2>All Words and Positions</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Word</th>
-            <th>Positions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for word, positions in all_words.items() %}
-          <tr>
-            <td>{{ word }}</td>
-            <td>{{ positions }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %} {% if search_result %}
-      <h2>Search Result</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Word</th>
-            <th>Positions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for word, positions in search_result.items() %}
-          <tr>
-            <td>{{ word }}</td>
-            <td>{{ positions }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %} {% if not error and not all_words and not search_result and
-      request.method == "POST" %}
-      <p class="output-message">No files uploaded.</p>
-      {% endif %}
+        {% if request.method == "POST" %}
+            {% if error %}
+                <p class="output-message">{{ error }}</p>
+            {% endif %}
+        {% endif %}
+        {% if all_words %}
+        <h2>All Words and Positions</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Word</th>
+                    <th>Positions</th>
+                    <th>TF (Term Frequency)</th>
+                    <th>IDF (Inverse Document Frequency)</th>
+                    <th>TF-IDF (TFxIDF)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for word, positions in all_words.items() %}
+                    <tr>
+                        <td>{{ word }}</td>
+                        <td>{{ positions }}</td>
+                        <td>
+                            {% for filename, tf_values in tf_all.items() %}
+                                {% if word in tf_values %}
+                                    {{ filename }}: {{ tf_values[word] }}<br>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ idf.get(word, '') }}</td>
+                        <td>
+                            {% for filename, tf_idf_values in tf_idf_all.items() %}
+                                {% if word in tf_idf_values %}
+                                    {{ filename }}: {{ tf_idf_values[word] }}<br>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+        {% if search_result %}
+            <h2 style="align-self: center;">Search Result</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Positions</th>
+                        <th>TF (Term Frequency)</th>
+                        <th>IDF (Inverse Document Frequency)</th>
+                        <th>TF-IDF (TFxIDF)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for word, positions in search_result.items() %}
+                    <tr>
+                      <td>{{ word }}</td>
+                      <td>{{ positions }}</td>
+                      <td>
+                          {% for filename, tf_values in tf_all.items() %}
+                              {% if word in tf_values %}
+                                  {{ filename }}: {{ tf_values[word] }}<br>
+                              {% endif %}
+                          {% endfor %}
+                      </td>
+                      <td>{{ idf.get(word, '') }}</td>
+                      <td>
+                          {% for filename, tf_idf_values in tf_idf_all.items() %}
+                              {% if word in tf_idf_values %}
+                                  {{ filename }}: {{ tf_idf_values[word] }}<br>
+                              {% endif %}
+                          {% endfor %}
+                      </td>
+                  </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if not error and not all_words and not search_result and request.method == "POST" %}
+            <p class="output-message">No files uploaded.</p>
+        {% endif %}
     </div>
-  </body>
+</body>
 </html>
