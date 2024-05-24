@@ -107,46 +107,39 @@ def index():
                             file.stream, encoding="utf-8"
                         ) as csv_file:
                             csv_reader = csv.reader(csv_file)
+                            text = ""
                             for row in csv_reader:
-                                text = " ".join(row)
-                                tokens = tokenize(text)
-                                corpus.append(tokens)
-                                total_terms = len(tokens)
-                                term_frequency = {}
-                                for token in tokens:
-                                    term_frequency[token] = (
-                                        term_frequency.get(token, 0) + 1
-                                    )
-                                tf_all[filename] = calculate_tf(
-                                    term_frequency, total_terms
-                                )
-                                for token, count in term_frequency.items():
-                                    term_counts[token] = (
-                                        term_counts.get(token, 0) + count
-                                    )
+                                text += " ".join(row) + " "
+                            tokens = tokenize(text)
+                            corpus.append(tokens)
+                            total_terms = len(tokens)
+                            term_frequency = {}
+                            for token in tokens:
+                                term_frequency[token] = term_frequency.get(token, 0) + 1
+                            tf_all[filename] = calculate_tf(term_frequency, total_terms)
+                            for token, count in term_frequency.items():
+                                term_counts[token] = term_counts.get(token, 0) + count
 
-                                file_index = build_inverted_index(
-                                    tokens, file_index_offset
+                            file_index = build_inverted_index(tokens, file_index_offset)
+                            for word, positions in file_index.items():
+                                if word in inverted_index:
+                                    inverted_index[word].extend(positions)
+                                else:
+                                    inverted_index[word] = positions
+                                all_words.setdefault(word, []).append(
+                                    (filename, positions)
                                 )
-                                for word, positions in file_index.items():
-                                    if word in inverted_index:
-                                        inverted_index[word].extend(positions)
-                                    else:
-                                        inverted_index[word] = positions
-                                    all_words.setdefault(word, []).append(
-                                        (filename, positions)
-                                    )
 
-                                filenames.update(
-                                    {
-                                        position: filename
-                                        for position in range(
-                                            file_index_offset,
-                                            file_index_offset + len(tokens),
-                                        )
-                                    }
-                                )
-                                file_index_offset += len(tokens)
+                            filenames.update(
+                                {
+                                    position: filename
+                                    for position in range(
+                                        file_index_offset,
+                                        file_index_offset + len(tokens),
+                                    )
+                                }
+                            )
+                            file_index_offset += len(tokens)
 
                 idf = calculate_idf(corpus, term_counts)
 
